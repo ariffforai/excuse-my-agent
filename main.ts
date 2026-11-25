@@ -26,6 +26,15 @@ const written = readFileSync(OUTPUT_PATH, "utf8");
 if (written !== ENTRY) {
   throw new Error("verification failed: entry.txt does not match the entry");
 }
+// Byte-level round-trip: the file must be exactly the UTF-8 encoding of
+// ENTRY, so a silent encoding or newline translation cannot slip through.
+const writtenBytes = readFileSync(OUTPUT_PATH);
+if (!writtenBytes.equals(Buffer.from(ENTRY, "utf8"))) {
+  throw new Error("verification failed: entry.txt bytes do not round-trip byte-for-byte");
+}
+if (written.endsWith("\n") || written !== written.trim()) {
+  throw new Error("verification failed: entry has a trailing newline or surrounding whitespace");
+}
 if (written.length < 1 || written.length > 200) {
   throw new Error(`verification failed: ${written.length} characters, must be 1-200`);
 }
